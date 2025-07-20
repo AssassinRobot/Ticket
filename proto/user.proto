@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package="./gen";
+
+message User{
+    uint32 ID = 1;
+    string first_name = 2;
+    string last_name = 3;
+    string email = 4;
+}
+
