@@ -54,7 +54,17 @@ func (api *API) ListUsers(ctx context.Context) ([]domain.User, error) {
 }
 
 func (api *API) UpdateUser(ctx context.Context, id uint, firstName, lastName string) error {
-	return api.DatabasePort.UpdateUser(ctx, id, firstName, lastName)
+	user,err := api.DatabasePort.UpdateUser(ctx, id, firstName, lastName)
+	if err != nil {
+		return err
+	}
+
+	err = api.UserEventPublisher.PublishUserUpdated(ctx,user)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (api *API) DeleteUser(ctx context.Context, id uint) error {

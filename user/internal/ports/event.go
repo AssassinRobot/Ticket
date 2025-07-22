@@ -7,7 +7,7 @@ import (
 
 type UserEventPublisher interface {
 	PublishUserRegistered(ctx context.Context, data *domain.User) error
-	PublishUserUpdated(ctx context.Context, firstName, lastName string) error
+	PublishUserUpdated(ctx context.Context, data *domain.User) error
 }
 
 type UserEventResponder interface {

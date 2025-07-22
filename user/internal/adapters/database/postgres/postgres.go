@@ -59,10 +59,10 @@ func (u *DatabasePostgresAdapter) ListUsers(ctx context.Context) ([]domain.User,
 	return users, nil
 }
 
-func (u *DatabasePostgresAdapter) UpdateUser(ctx context.Context, ID uint, firstName, lastName string) (error) {
+func (u *DatabasePostgresAdapter) UpdateUser(ctx context.Context, ID uint, firstName, lastName string) (*domain.User,error) {
 	user, err := u.GetUserByID(ctx, ID)
 	if err != nil {
-		return err
+		return nil,err
 	}
 
 	user.FirstName = firstName
@@ -70,10 +70,10 @@ func (u *DatabasePostgresAdapter) UpdateUser(ctx context.Context, ID uint, first
 
 	err = u.db.WithContext(ctx).Save(user).Error
 	if err != nil {
-		return  fmt.Errorf("update user by id: user ID:%d ,first name:%s ,last name:%s \n%w", ID, firstName, lastName, err)
+		return  nil,fmt.Errorf("update user by id: user ID:%d ,first name:%s ,last name:%s \n%w", ID, firstName, lastName, err)
 	}
 
-	return nil
+	return user,nil
 }
 
 func (u *DatabasePostgresAdapter) DeleteUser(ctx context.Context, ID uint) error {
