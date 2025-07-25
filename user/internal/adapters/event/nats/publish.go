@@ -54,7 +54,7 @@ func (u *UserEventPublisherAdapter) PublishUserRegistered(ctx context.Context, u
 	return err
 }
 
-func (u *UserEventPublisherAdapter) PublishUserUpdated(ctx context.Context, firstName, lastName string) error {
+func (u *UserEventPublisherAdapter) PublishUserUpdated(ctx context.Context,user *domain.User) error {
 	_, err := u.jetStream.CreateOrUpdateStream(ctx, jetstream.StreamConfig{
 		Name: StreamName,
 		Subjects: []string{UserSubject},
@@ -65,8 +65,10 @@ func (u *UserEventPublisherAdapter) PublishUserUpdated(ctx context.Context, firs
 		return err
 	}
 
-	data :=  []byte(firstName + " " + lastName)
-	
+	data, err := utils.Marshal(user)
+	if err != nil {
+		return err
+	}	
 	_, err = u.jetStream.Publish(ctx, UserUpdatedSubjectName, data)
 
 	return err
