@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package="./gen";
+
+message Train {
+    uint32 ID = 1;
+    string name = 2;
+    string origin = 3;
+    string destination = 4;
+    repeated Seat seats = 5;
+    uint32 capacity = 6;
+    bool is_full = 7;
+    google.protobuf.Timestamp departure_time = 8;
+    google.protobuf.Timestamp arrival_time = 9;
+}
+
+message TrainFilter{
+        string name = 1;
+        string origin = 2;
+        string destination = 3;
+        uint32 available_seats = 4;
+        google.protobuf.Timestamp departure_time = 5;
+        google.protobuf.Timestamp arrival_time = 6;
+}
+
+message Seat{
+    uint32 ID = 1;
+    uint32 train_id = 2;
+    uint32 seat_number = 3;
+}
