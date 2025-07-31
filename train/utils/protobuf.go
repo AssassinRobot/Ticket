@@ -82,6 +82,7 @@ func UnmarshalSeat(data []byte) (*domain.Seat,error){
 	seat := &domain.Seat{
 		ID:         uint(protoSeat.ID),
 		TrainID:    uint(protoSeat.TrainId),
+		UserID: uint(protoSeat.UserId),
 		SeatNumber: uint(protoSeat.SeatNumber),
 	}
 

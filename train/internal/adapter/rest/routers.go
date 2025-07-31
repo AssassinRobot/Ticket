@@ -7,12 +7,11 @@ import (
 )
 
 func InitRouters(api ports.APIPort) *fiber.App {
-	
 
 	r := fiber.New()
 
 	v1 := r.Group("/api/v1")
-	
+
 	trainHandler := NewTrainHandler(api)
 	trainRoutes := v1.Group("/trains")
 	trainRoutes.Get("/", trainHandler.ListTrains)
@@ -22,17 +21,12 @@ func InitRouters(api ports.APIPort) *fiber.App {
 	trainRoutes.Patch("/travel-details", trainHandler.UpdateTrainTravelDetails)
 	trainRoutes.Delete("/:id", trainHandler.DeleteTrain)
 
-
 	seatRoutes := v1.Group("/seats")
-	seatRoutes.Get("/:train_id", trainHandler.ListSeatsByTrainID)
 	seatRoutes.Get("/:id", trainHandler.GetSeatByID)
+	seatRoutes.Get("/train/:train_id", trainHandler.ListSeatsByTrainID)
 	seatRoutes.Post("", trainHandler.CreateSeat)
 	seatRoutes.Patch("", trainHandler.UpdateSeatNumber)
 	seatRoutes.Delete("/:id", trainHandler.DeleteSeat)
-
-	
-
-
 
 	return r
 }

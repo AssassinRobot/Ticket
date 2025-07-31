@@ -32,7 +32,7 @@ type CreateSeatRequest struct {
 
 type UpdateTrainRequest struct {
 	ID uint `json:"id"`
-	Train
+	Name string `json:"name"`
 }
 
 type UpdateSeatRequest struct {
@@ -125,7 +125,7 @@ func (h *TrainHandler) UpdateTrain(ctx *fiber.Ctx) error {
 		})
 	}
 
-	err = h.api.UpdateTrain(ctx.Context(), updateTrainRequest.ID, updateTrainRequest.Name, uint32(updateTrainRequest.Capacity))
+	err = h.api.UpdateTrain(ctx.Context(), updateTrainRequest.ID, updateTrainRequest.Name)
 	if err != nil {
 		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to update train: " + err.Error(),

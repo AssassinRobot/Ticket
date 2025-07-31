@@ -16,13 +16,13 @@ type NatsEventConsumer struct {
 }
 
 type SeatHandlers interface {
-	SeatBooked(ctx context.Context, seatID, trainID uint) error
+	SeatBooked(ctx context.Context, seatID, trainID,userID uint) error
 	CancelSeatBooking(ctx context.Context, seatID, trainID uint) error
 }
 
 const (
 	SeatStream                  = "SEAT"
-	SeatBookedSubjectName       = "seat.booked"
+	SeatBookedSubjectName       = "seat.book.booked"
 	SeatBookCanceledSubjectName = "seat.book.canceled"
 )
 
@@ -79,7 +79,7 @@ func (c *NatsEventConsumer) ConsumerSeatEvents(ctx context.Context) <-chan error
 						continue
 					}
 
-					err = c.SeatHandlers.SeatBooked(ctx, seat.ID, seat.TrainID)
+					err = c.SeatHandlers.SeatBooked(ctx, seat.ID, seat.TrainID,seat.UserID)
 					if err != nil {
 						errorStream <- err
 						ack(msg, errorStream)
