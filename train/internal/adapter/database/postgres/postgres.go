@@ -25,12 +25,13 @@ func (r *PostgresDBAdapter) CreateTrain(ctx context.Context, train *domain.Train
 	if err := r.db.WithContext(ctx).Create(train).Error; err != nil {
 		return fmt.Errorf("failed to create train: %w", err)
 	}
+
 	return nil
 }
 
 func (r *PostgresDBAdapter) GetTrainByID(ctx context.Context, ID uint) (*domain.Train, error) {
 	var train domain.Train
-	err := r.db.WithContext(ctx).First(&train, ID).Error
+	err := r.db.WithContext(ctx).Preload("Seats", "booked = false").First(&train, ID).Error
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to get train by ID: %w", err)
@@ -116,20 +117,12 @@ func (r *PostgresDBAdapter) IsTrainAvailable(ctx context.Context, ID uint) (bool
 	return isFull, nil
 }
 
-func (r *PostgresDBAdapter) UpdateTrain(ctx context.Context, ID uint, name string, capacity uint32) error {
-	train, err := r.GetTrainByID(ctx, ID)
+func (r *PostgresDBAdapter) UpdateTrain(ctx context.Context, ID uint, name string) error {
+	err := r.db.WithContext(ctx).Model(&domain.Train{}).Where("id = ?", ID).Update("name", name).Error
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to update train name: train ID:%d %w", ID, err)
 	}
-
-	train.Name = name
-	train.Capacity = capacity
-
-	err = r.db.WithContext(ctx).Save(&train).Error
-	if err != nil {
-		return fmt.Errorf("failed to update train: %w", err)
-	}
-
+	
 	return nil
 }
 
@@ -226,6 +219,15 @@ func (r *PostgresDBAdapter) UpdateSeatNumber(ctx context.Context, seatID uint, s
 	err := r.db.WithContext(ctx).Model(&domain.Seat{}).Where("id = ?", seatID).Update("seat_number", seatNumber).Error
 	if err != nil {
 		return fmt.Errorf("failed to update seat number: seat ID:%d %w", seatID, err)
+	}
+	return nil
+}
+
+
+func (r *PostgresDBAdapter) UpdateSeatUser(ctx context.Context, seatID,userID uint) error {
+	err := r.db.WithContext(ctx).Model(&domain.Seat{}).Where("id = ?", seatID).Update("user_id", userID).Error
+	if err != nil {
+		return fmt.Errorf("failed to update user ID: seat ID:%d %w", seatID, err)
 	}
 	return nil
 }

@@ -13,16 +13,30 @@ type APIAdapter struct {
 	DatabasePort ports.DatabasePort
 }
 
-func NewAPIAdapter(DBport ports.DatabasePort)*APIAdapter{
-	return  &APIAdapter{
-		DatabasePort:DBport,
+func NewAPIAdapter(DBport ports.DatabasePort) *APIAdapter {
+	return &APIAdapter{
+		DatabasePort: DBport,
 	}
 }
 
 func (a *APIAdapter) CreateTrain(ctx context.Context, name string, capacity uint) error {
 	train := domain.NewTrain(name, uint32(capacity))
 
-	return a.DatabasePort.CreateTrain(ctx, train)
+	err := a.DatabasePort.CreateTrain(ctx, train)
+	if err != nil {
+		return err
+	}
+
+	for i := 1; i <= int(train.Capacity); i++ {
+		trainSeat := domain.NewSeat(train.ID, uint(i))
+
+		err := a.DatabasePort.CreateSeat(ctx, trainSeat)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (a *APIAdapter) GetTrainByID(ctx context.Context, ID uint) (*domain.Train, error) {
@@ -71,8 +85,8 @@ func (a *APIAdapter) ListTrainsFiltered(ctx context.Context, filters map[string]
 	return a.DatabasePort.ListTrainsFiltered(ctx, trainFilters)
 }
 
-func (a *APIAdapter) UpdateTrain(ctx context.Context, ID uint, name string, capacity uint32) error {
-	return a.DatabasePort.UpdateTrain(ctx, ID, name, capacity)
+func (a *APIAdapter) UpdateTrain(ctx context.Context, ID uint, name string) error {
+	return a.DatabasePort.UpdateTrain(ctx, ID, name)
 }
 
 func (a *APIAdapter) UpdateTrainTravelDetails(ctx context.Context, TrainID uint, destination, origin, departureTime, arrivalTime string) error {
@@ -120,17 +134,22 @@ func (a *APIAdapter) UpdateSeatNumber(ctx context.Context, seatID uint, seatNumb
 	return nil
 }
 
-func (a *APIAdapter) SeatBooked(ctx context.Context, seatID uint, trainID uint) error {
+func (a *APIAdapter) SeatBooked(ctx context.Context, seatID,trainID,userID uint) error {
 	IsTrainAvailable, err := a.DatabasePort.IsTrainAvailable(ctx, trainID)
 	if err != nil {
 		return err
 	}
 
-	if !IsTrainAvailable {
+	if IsTrainAvailable {
 		return fmt.Errorf("train with ID %d is not available", trainID)
 	}
 
 	err = a.DatabasePort.UpdateSeatBookingStatus(ctx, seatID, true)
+	if err != nil {
+		return err
+	}
+
+	err = a.DatabasePort.UpdateSeatUser(ctx,seatID,userID)
 	if err != nil {
 		return err
 	}
@@ -151,6 +170,6 @@ func (a *APIAdapter) ListSeatsByTrainID(ctx context.Context, trainID uint) ([]do
 	return a.DatabasePort.ListSeatsByTrainID(ctx, trainID)
 }
 
-func (a *APIAdapter) DeleteSeat(ctx context.Context,ID uint)error{
-	return  a.DatabasePort.DeleteSeat(ctx,ID)
+func (a *APIAdapter) DeleteSeat(ctx context.Context, ID uint) error {
+	return a.DatabasePort.DeleteSeat(ctx, ID)
 }

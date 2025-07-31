@@ -9,7 +9,7 @@ type Train struct {
 	Capacity       uint32 // Total number of seats in the train
 	AvailableSeats uint32 // Number of seats available for booking
 	IsFull         bool   // Indicates if the train is fully booked
-	Seats          []Seat `gorm:"foreignKey:TrainID"`
+	Seats          []Seat `gorm:"foreignKey:TrainID;constraint:OnDelete:CASCADE"`
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 }
