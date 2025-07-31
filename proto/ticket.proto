@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package="./gen";
+
+message Ticket {
+    uint32 ID = 1;
+    uint32 user_id = 2;
+    uint32 train_id = 3;
+    uint32 seat_number = 4;
+    string origin = 5;
+    string destination = 6;
+    google.protobuf.Timestamp expires_at = 7;
+    google.protobuf.Timestamp departure_time = 8;
+    google.protobuf.Timestamp arrival_time = 9;
+}

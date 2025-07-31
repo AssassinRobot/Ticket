@@ -28,5 +28,6 @@ message TrainFilter{
 message Seat{
     uint32 ID = 1;
     uint32 train_id = 2;
-    uint32 seat_number = 3;
+    uint32 user_id = 3;
+    uint32 seat_number = 4;
 }
