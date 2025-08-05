@@ -12,6 +12,7 @@ message Ticket {
     string origin = 5;
     string destination = 6;
     google.protobuf.Timestamp expires_at = 7;
-    google.protobuf.Timestamp departure_time = 8;
-    google.protobuf.Timestamp arrival_time = 9;
+    google.protobuf.Timestamp canceled_at = 8;
+    google.protobuf.Timestamp departure_time = 9;
+    google.protobuf.Timestamp arrival_time = 10;
 }

@@ -10,6 +10,3 @@ type UserEventPublisher interface {
 	PublishUserUpdated(ctx context.Context, data *domain.User) error
 }
 
-type UserEventResponder interface {
-	ReplyToGetUser(ctx context.Context, handler func(*domain.User)) error
-}

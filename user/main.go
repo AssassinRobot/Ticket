@@ -3,17 +3,30 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"user/config"
 	"user/internal/adapters/database"
 	"user/internal/adapters/database/postgres"
 	"user/internal/adapters/event/nats"
-	"user/internal/adapters/rest"
 	"user/internal/application/core/api"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
+	// Handle interrupt signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		log.Println("Shutting down gracefully...")
+		cancel()
+	}()
+		
 	err := config.LoadConfig()
 	if err != nil {
 		log.Fatalf("Error loading config: %v", err)
@@ -31,18 +44,6 @@ func main() {
 
 	databaseAdapter := postgres.NewDatabasePostgresAdapter(db)
 
-	userEventResponder := nats.NewUserEventResponderAdapter(natsConn, databaseAdapter.GetUserByID)
-
-	var responds = func ()  {
-		go func() {
-			if err := userEventResponder.ReplyToGetUser(ctx); err != nil {
-				log.Printf("Error replying to get user: %v", err)
-			}
-		}()
-	}
-
-	responds()
-
 	userEventPublisher, err := nats.NewEventPublisherAdapter(natsConn)
 	if err != nil {
 		log.Fatalf("Error creating user event publisher: %v", err)
@@ -52,7 +53,47 @@ func main() {
 		databaseAdapter,
 		userEventPublisher,
 	)
-	
-	rest.Start(api, config.GetServerPort())
 
+	userEventResponder := nats.NewUserEventResponderAdapter(natsConn, api)
+
+	go func() {
+		err := userEventResponder.ReplyToListUsers(ctx)
+
+		if err != nil {
+			log.Printf("Error replying to get user: %v", err)
+		}
+	}()
+
+	go func() {
+		err := userEventResponder.ReplyToGetUserByID(ctx)
+
+		if err != nil {
+			log.Printf("Error replying to get user: %v", err)
+		}
+	}()
+
+	go func() {
+		err := userEventResponder.ReplayToCreateUser(ctx)
+
+		if err != nil {
+			log.Printf("Error replying to get user: %v", err)
+		}
+	}()
+
+	go func() {
+		err := userEventResponder.ReplayToUpdateUserByID(ctx)
+
+		if err != nil {
+			log.Printf("Error replying to get user: %v", err)
+		}
+	}()
+
+	go func() {
+		err := userEventResponder.ReplayToDeleteUserByID(ctx)
+		if err != nil {
+			log.Printf("Error replying to get user: %v", err)
+		}
+	}()
+
+	<-ctx.Done()
 }
