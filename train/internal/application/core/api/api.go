@@ -3,8 +3,6 @@ package api
 import (
 	"context"
 	"fmt"
-	"strconv"
-	"time"
 	"train/internal/application/core/domain"
 	"train/internal/ports"
 )
@@ -47,41 +45,7 @@ func (a *APIAdapter) ListTrains(ctx context.Context) ([]domain.Train, error) {
 	return a.DatabasePort.ListTrains(ctx)
 }
 
-func (a *APIAdapter) ListTrainsFiltered(ctx context.Context, filters map[string]string) ([]domain.Train, error) {
-	var trainFilters = &domain.TrainFilters{}
-
-	for key, value := range filters {
-		switch key {
-		case "name":
-			trainFilters.Name = value
-		case "available_seats":
-			availableSeats, err := strconv.Atoi(value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse 'available_seats' filter: %w", err)
-			}
-
-			trainFilters.AvailableSeats = uint(availableSeats)
-		case "origin":
-			trainFilters.Origin = value
-		case "destination":
-			trainFilters.Destination = value
-		case "departure_time":
-			timeParsed, err := time.Parse(time.DateTime, value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse 'departure_time' filter: %w", err)
-			}
-
-			trainFilters.DepartureTime = timeParsed
-		case "arrival_time":
-			timeParsed, err := time.Parse(time.DateTime, value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to parse 'arrival_time' filter: %w", err)
-			}
-
-			trainFilters.ArrivalTime = timeParsed
-		}
-	}
-
+func (a *APIAdapter) ListTrainsFiltered(ctx context.Context, trainFilters *domain.TrainFilters) ([]domain.Train, error) {
 	return a.DatabasePort.ListTrainsFiltered(ctx, trainFilters)
 }
 
@@ -89,25 +53,7 @@ func (a *APIAdapter) UpdateTrain(ctx context.Context, ID uint, name string) erro
 	return a.DatabasePort.UpdateTrain(ctx, ID, name)
 }
 
-func (a *APIAdapter) UpdateTrainTravelDetails(ctx context.Context, TrainID uint, destination, origin, departureTime, arrivalTime string) error {
-
-	departureTimeParsed, err := time.Parse(time.DateTime, departureTime)
-	if err != nil {
-		return fmt.Errorf("failed to parse departure time: %w", err)
-	}
-
-	arrivalTimeParsed, err := time.Parse(time.DateTime, arrivalTime)
-	if err != nil {
-		return fmt.Errorf("failed to parse arrival time: %w", err)
-	}
-
-	travelDetails := &domain.TrainTravelDetails{
-		Destination:   destination,
-		Origin:        origin,
-		DepartureTime: departureTimeParsed,
-		ArrivalTime:   arrivalTimeParsed,
-	}
-
+func (a *APIAdapter) UpdateTrainTravelDetails(ctx context.Context, TrainID uint, travelDetails *domain.TrainTravelDetails) error {
 	return a.DatabasePort.UpdateTrainTravelDetails(ctx, TrainID, travelDetails)
 }
 
@@ -134,7 +80,7 @@ func (a *APIAdapter) UpdateSeatNumber(ctx context.Context, seatID uint, seatNumb
 	return nil
 }
 
-func (a *APIAdapter) SeatBooked(ctx context.Context, seatID,trainID,userID uint) error {
+func (a *APIAdapter) SeatBooked(ctx context.Context, seatID, trainID, userID uint) error {
 	IsTrainAvailable, err := a.DatabasePort.IsTrainAvailable(ctx, trainID)
 	if err != nil {
 		return err
@@ -149,7 +95,7 @@ func (a *APIAdapter) SeatBooked(ctx context.Context, seatID,trainID,userID uint)
 		return err
 	}
 
-	err = a.DatabasePort.UpdateSeatUser(ctx,seatID,userID)
+	err = a.DatabasePort.UpdateSeatUser(ctx, seatID, userID)
 	if err != nil {
 		return err
 	}

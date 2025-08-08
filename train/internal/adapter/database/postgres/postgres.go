@@ -42,7 +42,7 @@ func (r *PostgresDBAdapter) GetTrainByID(ctx context.Context, ID uint) (*domain.
 func (r *PostgresDBAdapter) ListTrains(ctx context.Context) ([]domain.Train, error) {
 	var trains []domain.Train
 
-	err := r.db.WithContext(ctx).Find(&trains).Error
+	err := r.db.WithContext(ctx).Preload("Seats").Find(&trains).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to list trains: %w", err)
 	}

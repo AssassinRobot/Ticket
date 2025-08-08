@@ -10,7 +10,7 @@ type (
 		TrainID    uint
 		SeatNumber uint
 		TravelDetailDTO
-		ExpiresAt time.Time
+		ExpiresAt  time.Time
 		CanceledAt *time.Time
 	}
 
