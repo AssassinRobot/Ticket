@@ -25,13 +25,19 @@ const (
 	SubjectRequestCreateTrain             = "request.create.train"
 	SubjectRequestUpdateTrain             = "request.update.train"
 	SubjectRequestUpdateTrainTravelDetail = "request.update.train.travel.detail"
-	SubjectRequestDeleteTrainByID             = "request.delete.train.byID"
+	SubjectRequestDeleteTrainByID         = "request.delete.train.byID"
 
 	SubjectRequestGetSeatByID        = "request.get.seat.byID"
 	SubjectRequestListSeatsByTrainID = "request.list.seats.byTrainID"
 	SubjectRequestCreateSeat         = "request.create.seat"
 	SubjectRequestUpdateSeatNumber   = "request.update.seat.number"
 	SubjectRequestDeleteSeatByID     = "request.delete.seat.byID"
+
+	SubjectRequestGetTicketByID        = "request.get.ticket.byID"
+	SubjectRequestBookTicket           = "request.book.ticket"
+	SubjectRequestCancelTicket         = "request.cancel.ticket"
+	SubjectRequestListTicketsByUserID  = "request.list.tickets.byUserID"
+	SubjectRequestListTicketsByTrainID = "request.list.tickets.byTrainID"
 )
 
 type NatsRequestSender struct {
@@ -329,13 +335,90 @@ func (s *NatsRequestSender) DeleteSeatBySeatID(ctx context.Context, seatID uint)
 }
 
 func (s *NatsRequestSender) GetTicketByID(ctx context.Context, ticketID uint) (*dto.TicketDTO, error) {
-	panic("not implemented") // TODO: Implement
+	ticketIDstr := strconv.Itoa(int(ticketID))
+
+	replay, err := s.nats.RequestWithContext(ctx, SubjectRequestGetTicketByID, []byte(ticketIDstr))
+	if err != nil {
+		return nil, err
+	} else if err := utils.HandleError(replay.Data); err != nil {
+		return nil, err
+	}
+
+	dtoTicket, err := utils.UnmarshalTicket(replay.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return dtoTicket, nil
 }
 
-func (s *NatsRequestSender) BookTicket(ctx context.Context, userID uint, trainID uint, TicketsNumber uint) ([]dto.TicketDTO, error) {
-	panic("not implemented") // TODO: Implement
+func (s *NatsRequestSender) ListTicketsByUserID(ctx context.Context, userID uint) ([]dto.TicketDTO, error) {
+	userIDstr := strconv.Itoa(int(userID))
+
+	replay, err := s.nats.RequestWithContext(ctx, SubjectRequestListTicketsByUserID, []byte(userIDstr))
+	if err != nil {
+		return nil, err
+	} else if err := utils.HandleError(replay.Data); err != nil {
+		return nil, err
+	}
+
+	dtoTicket, err := utils.UnmarshalTickets(replay.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return dtoTicket, nil
+}
+
+func (s *NatsRequestSender) ListTicketsByTrainID(ctx context.Context, trainID uint) ([]dto.TicketDTO, error) {
+	trainIDstr := strconv.Itoa(int(trainID))
+
+	replay, err := s.nats.RequestWithContext(ctx, SubjectRequestListTicketsByTrainID, []byte(trainIDstr))
+	if err != nil {
+		return nil, err
+	} else if err := utils.HandleError(replay.Data); err != nil {
+		return nil, err
+	}
+
+	dtoTicket, err := utils.UnmarshalTickets(replay.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return dtoTicket, nil
+}
+
+func (s *NatsRequestSender) BookTicket(ctx context.Context, userID uint, trainID uint, ticketsNumber uint) ([]dto.TicketDTO, error) {
+	requestData, err := utils.MarshalBookTicketRequest(trainID, userID, ticketsNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	replay, err := s.nats.RequestWithContext(ctx, SubjectRequestBookTicket, requestData)
+	if err != nil {
+		return nil, err
+	} else if err := utils.HandleError(replay.Data); err != nil {
+		return nil, err
+	}
+
+	ticketsDTO, err := utils.UnmarshalTickets(replay.Data)
+	if err != nil {
+		return nil, err
+	}
+
+	return ticketsDTO, nil
+
 }
 
 func (s *NatsRequestSender) CancelTicket(ctx context.Context, ticketID uint) error {
-	panic("not implemented") // TODO: Implement
+	ticketIDstr := strconv.Itoa(int(ticketID))
+
+	replay, err := s.nats.RequestWithContext(ctx, SubjectRequestCancelTicket, []byte(ticketIDstr))
+	if err != nil {
+		return err
+	} else if err := utils.HandleError(replay.Data); err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -35,6 +35,10 @@ func (a *APIAdapter) GetTicketsByUserID(ctx context.Context, userID uint) ([]dom
 	return a.databasePort.GetTicketsByUserID(ctx, userID)
 }
 
+func (a *APIAdapter) GetTicketsByTrainID(ctx context.Context, trainID uint) ([]domain.Ticket, error) {
+	return a.databasePort.GetTicketsByTrainID(ctx, trainID)
+}
+
 func (a *APIAdapter) BookTicket(ctx context.Context, userID, trainID, ticketNumber uint) ([]domain.Ticket, error) {
 	availableTrain, err := a.requestPort.RequestGetTrainByID(ctx, trainID)
 	if err != nil {
@@ -81,7 +85,7 @@ func (a *APIAdapter) BookTicket(ctx context.Context, userID, trainID, ticketNumb
 		}
 
 	} else if ticketNumber > 1 {
-		for i := 0; i < trainSeatsLen; i++ {
+		for i := 0; i < int(ticketNumber); i++ {
 			selectedSeat := availableTrain.Seats[i]
 
 			selectedSeat.UserID = userID

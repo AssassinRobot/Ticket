@@ -59,6 +59,25 @@ func (h *UserHandler) GetUserByID(ctx *fiber.Ctx) error {
 	return ctx.JSON(user)
 }
 
+func (h *UserHandler) ListUserTickets(ctx *fiber.Ctx) error {
+	ID, err := ctx.ParamsInt("id")
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid user ID: " + err.Error(),
+		})
+	}
+
+	tickets, err := h.requestHandler.ListTicketsByUserID(ctx.Context(), uint(ID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get user tickets: " + err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(tickets)
+}
+
+
 
 func (h *UserHandler) CreateUser(ctx *fiber.Ctx) error {
 	var createUserRequest = &CreateUserRequest{}

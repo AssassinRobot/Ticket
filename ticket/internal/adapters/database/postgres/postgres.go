@@ -56,6 +56,17 @@ func (r *PostgresDBAdapter) GetTicketsByUserID(ctx context.Context, userID uint)
 	return tickets, nil
 }
 
+func (r *PostgresDBAdapter) GetTicketsByTrainID(ctx context.Context, trainID uint) ([]domain.Ticket, error) {
+	var tickets []domain.Ticket
+
+	err := r.db.WithContext(ctx).Where("train_id = ?", trainID).Find(&tickets).Error
+	if err != nil {
+		return nil, fmt.Errorf("failed to list tickets by train id %d: %w", trainID, err)
+	}
+
+	return tickets, nil
+}
+
 func (r *PostgresDBAdapter) UpdateCanceledAt(ctx context.Context, ticketID uint, canceledAt time.Time) error {
 	tx, err := begin(r.db)
 	if err != nil {

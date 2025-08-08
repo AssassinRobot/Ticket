@@ -11,6 +11,53 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func MarshalBookTicketRequest(tranID, userID, ticketNumber uint) ([]byte, error) {
+	bookTicketRequest := &gen.BookTicketRequest{
+		TrainId:      uint32(tranID),
+		UserId:       uint32(userID),
+		TicketNumber: uint32(ticketNumber),
+	}
+
+	data, err := proto.Marshal(bookTicketRequest)
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
+func UnmarshalTickets(data []byte) ([]dto.TicketDTO, error) {
+	protoTickets := &gen.ListTickets{}
+
+	err := proto.Unmarshal(data, protoTickets)
+	if err != nil {
+		return nil, err
+	}
+
+	ticketsDTO := []dto.TicketDTO{}
+
+	for _, protoTicket := range protoTickets.Tickets {
+		ticketDTO := *convertProtoTicketToDTOTicket(protoTicket)
+
+		ticketsDTO = append(ticketsDTO, ticketDTO)
+	}
+
+	return ticketsDTO, nil
+}
+
+func UnmarshalTicket(data []byte) (*dto.TicketDTO, error) {
+	protoTicket := &gen.Ticket{}
+
+	err := proto.Unmarshal(data, protoTicket)
+	if err != nil {
+		return nil, err
+	}
+
+	ticketDTO := convertProtoTicketToDTOTicket(protoTicket)
+
+	return ticketDTO, nil
+}
+
 func UnmarshalListUsersReplay(data []byte) ([]dto.UserDTO, error) {
 	protoUsers := &gen.ListUsersReplay{}
 
@@ -182,7 +229,7 @@ func MarshalUpdateTrainTravelDetailsRequest(trainID uint, travelDetails map[stri
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse arrival time: %w", err)
 	}
-	
+
 	protoRequest := &gen.UpdateTrainTravelDetailsRequest{
 		ID:            uint32(trainID),
 		Origin:        travelDetails["origin"],
@@ -299,4 +346,29 @@ func ParseTime(str string) (*time.Time, error) {
 	}
 
 	return &time, nil
+}
+
+func convertProtoTicketToDTOTicket(protoTicket *gen.Ticket) *dto.TicketDTO {
+	travelDetailDTO := dto.TravelDetailDTO{
+		Origin:        protoTicket.Origin,
+		Destination:   protoTicket.Destination,
+		DepartureTime: protoTicket.DepartureTime.AsTime(),
+		ArrivalTime:   protoTicket.ArrivalTime.AsTime(),
+	}
+
+	ticketDTO := &dto.TicketDTO{
+		ID:              uint(protoTicket.ID),
+		SeatNumber:      uint(protoTicket.SeatNumber),
+		UserID:          uint(protoTicket.UserId),
+		TrainID:         uint(protoTicket.TrainId),
+		ExpiresAt:       protoTicket.ExpiresAt.AsTime(),
+		TravelDetailDTO: travelDetailDTO,
+	}
+
+	canceledAt := protoTicket.CanceledAt.AsTime()
+	if !canceledAt.IsZero() {
+		ticketDTO.CanceledAt = &canceledAt
+	}
+
+	return ticketDTO
 }

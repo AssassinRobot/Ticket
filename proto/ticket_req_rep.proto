@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+import "ticket.proto";
+option go_package="./gen";
+
+message BookTicketRequest {
+    uint32 user_id = 1;
+    uint32 train_id = 2;
+    uint32 ticket_number = 3;
+}
+
+message ListTickets {
+    repeated Ticket tickets = 1;
+}

@@ -27,6 +27,8 @@ type RequestSender interface {
 	DeleteSeatBySeatID(ctx context.Context, seatID uint) error
 
 	GetTicketByID(ctx context.Context, ticketID uint) (*dto.TicketDTO, error)
+	ListTicketsByUserID(ctx context.Context,userID uint)([]dto.TicketDTO, error)
+	ListTicketsByTrainID(ctx context.Context,trainID uint)([]dto.TicketDTO,error)
 	BookTicket(ctx context.Context, userID, trainID, TicketsNumber uint) ([]dto.TicketDTO, error)
 	CancelTicket(ctx context.Context, ticketID uint) error
 }

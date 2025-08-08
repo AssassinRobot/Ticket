@@ -101,6 +101,24 @@ func (h *TrainHandler) GetTrainByID(ctx *fiber.Ctx) error {
 	return ctx.Status(fiber.StatusOK).JSON(train)
 }
 
+func (h *TrainHandler) ListTrainTickets(ctx *fiber.Ctx) error {
+	ID, err := ctx.ParamsInt("id")
+	if err != nil {
+		return ctx.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Invalid train ID: " + err.Error(),
+		})
+	}
+
+	tickets, err := h.requestHandler.ListTicketsByTrainID(ctx.Context(), uint(ID))
+	if err != nil {
+		return ctx.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": "Failed to get user tickets: " + err.Error(),
+		})
+	}
+
+	return ctx.Status(fiber.StatusOK).JSON(tickets)
+}
+
 func (h *TrainHandler) CreateTrain(ctx *fiber.Ctx) error {
 	var createTrainRequest = &CreateTrainRequest{}
 	err := ctx.BodyParser(createTrainRequest)

@@ -19,7 +19,3 @@ func GetDatabaseURL() string {
 func GetNatsURL() string {
 	return os.Getenv("NATS_URL")
 }
-
-func GetServerPort() string {
-	return os.Getenv("SERVER_PORT")
-}
