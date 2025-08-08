@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+option go_package = "./gen";
+
+import "train.proto"; 
+import "google/protobuf/timestamp.proto";
+
+
+
+message ListTrainsReplay{
+    repeated Train trains = 1;
+}
+
+message ListSeatsReplay{
+    repeated Seat seats = 1;
+}
+
+message CreateTrainRequest {
+    string name = 1;
+    uint32 capacity = 2;
+}
+
+message UpdateTrainNameRequest {
+    uint32 ID = 1;
+    string name = 2;
+}
+
+message UpdateTrainTravelDetailsRequest {
+    uint32 ID = 1;
+    string origin = 2;
+    string destination = 3;
+    google.protobuf.Timestamp departure_time = 4;
+    google.protobuf.Timestamp arrival_time = 5;
+}
+
+message CreateSeatRequest {
+    uint32 train_id = 1;
+    uint32 number = 2;
+}
+
+message UpdateSeatNumberRequest {
+    uint32 ID = 1;
+    uint32 number = 2;
+}
+

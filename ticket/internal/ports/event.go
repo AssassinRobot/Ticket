@@ -10,6 +10,6 @@ type EventPublisherPort interface {
 	PublishSeatBookingCanceled(ctx context.Context, seat *domain.Seat) error
 }
 
-type RequestPort interface{
-	RequestGetTrainByID(ctx context.Context,trainID uint)(*domain.Train,error)
+type RequestPort interface {
+	RequestGetTrainByID(ctx context.Context, trainID uint) (*domain.Train, error)
 }

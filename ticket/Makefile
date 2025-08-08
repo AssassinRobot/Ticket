@@ -6,4 +6,4 @@ generate:
 		--go_out=$(OUT_DIR) \
 		--go_opt=paths=source_relative \
 		$(PROTO_DIR)/train.proto \
-		$(PROTO_DIR)/ticket.proto
+		$(PROTO_DIR)/ticket*.proto

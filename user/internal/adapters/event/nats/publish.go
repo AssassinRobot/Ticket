@@ -44,7 +44,7 @@ func (u *UserEventPublisherAdapter) PublishUserRegistered(ctx context.Context, u
 		return err
 	}
 
-	data, err := utils.Marshal(user)
+	data, err := utils.MarshalUser(user)
 	if err != nil {
 		return err
 	}
@@ -65,7 +65,7 @@ func (u *UserEventPublisherAdapter) PublishUserUpdated(ctx context.Context,user 
 		return err
 	}
 
-	data, err := utils.Marshal(user)
+	data, err := utils.MarshalUser(user)
 	if err != nil {
 		return err
 	}	

@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	SubjectGetTrain          = "request.trains.get"
+	SubjectRequestGetTrainByID            = "request.get.train.byID"
 )
 
 type TicketRequestSenderAdapter struct {
@@ -25,12 +25,15 @@ func NewTicketRequestSenderAdapter(natsConn *nats.Conn) *TicketRequestSenderAdap
 
 func (t *TicketRequestSenderAdapter) RequestGetTrainByID(ctx context.Context, trainID uint) (*domain.Train, error) {
 	strTrainID := strconv.Itoa(int(trainID))
-	msg, err := t.natsConn.RequestWithContext(ctx, SubjectGetTrain, []byte(strTrainID))
+	
+	msg, err := t.natsConn.RequestWithContext(ctx, SubjectRequestGetTrainByID, []byte(strTrainID))
 	if err != nil {
 		return nil, err
+	}else if err := utils.HandleError(msg.Data);err != nil{
+		return nil,err
 	}
 
-	train,err := utils.UnMarshalTrain(msg.Data)
+	train,err := utils.UnmarshalTrain(msg.Data)
 	if err != nil {
 		return nil, err
 	}

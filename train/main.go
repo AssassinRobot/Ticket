@@ -3,16 +3,30 @@ package main
 import (
 	"context"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"train/config"
 	"train/internal/adapter/database"
 	"train/internal/adapter/database/postgres"
 	"train/internal/adapter/event/nats"
-	"train/internal/adapter/rest"
+
 	"train/internal/application/core/api"
 )
 
 func main() {
-	ctx := context.Background()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle interrupt signal
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	go func() {
+		<-sigChan
+		log.Println("Shutting down gracefully...")
+		cancel()
+	}()
 
 	err := config.LoadConfig()
 	if err != nil {
@@ -31,14 +45,9 @@ func main() {
 
 	databaseAdapter := postgres.NewPostgresDBAdapter(db)
 
-	trainEventResponder := nats.NewTrainEventResponderAdapter(natsConn, databaseAdapter)
+	api := api.NewAPIAdapter(databaseAdapter)
 
-	go func() {
-		err := trainEventResponder.ReplyToGetTrainByID(ctx)
-		if err != nil {
-			log.Printf("Error replying to get train: %v", err)
-		}
-	}()
+	trainEventResponder := nats.NewTrainEventResponderAdapter(natsConn, api)
 
 	go func() {
 		err := trainEventResponder.ReplyToListTrains(ctx)
@@ -54,7 +63,75 @@ func main() {
 		}
 	}()
 
-	api := api.NewAPIAdapter(databaseAdapter)
+	go func() {
+		err := trainEventResponder.ReplyToGetTrainByID(ctx)
+		if err != nil {
+			log.Printf("Error replying to get train by ID: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToCreateTrain(ctx)
+		if err != nil {
+			log.Printf("Error replying to create train: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToUpdateTrainName(ctx)
+		if err != nil {
+			log.Printf("Error replying to update train: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToUpdateTrainTravelDetails(ctx)
+		if err != nil {
+			log.Printf("Error replying to update train: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToDeleteTrainByID(ctx)
+		if err != nil {
+			log.Printf("Error replying to delete train: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToListSeatsByTrainID(ctx)
+		if err != nil {
+			log.Printf("Error replying to list seats by train ID: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToGetSeatByID(ctx)
+		if err != nil {
+			log.Printf("Error replying to get seat by ID: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToCreateSeat(ctx)
+		if err != nil {
+			log.Printf("Error replying to create seat: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToUpdateSeatNumberBySeatID(ctx)
+		if err != nil {
+			log.Printf("Error replying to update seat: %v", err)
+		}
+	}()
+
+	go func() {
+		err := trainEventResponder.ReplyToDeleteSeatBySeatID(ctx)
+		if err != nil {
+			log.Printf("Error replying to delete seat: %v", err)
+		}
+	}()
 
 	trainEventConsumer, err := nats.NewNatsEventConsumer(natsConn, api)
 	if err != nil {
@@ -68,5 +145,7 @@ func main() {
 		}
 	}()
 
-	rest.Start(api, config.GetServerPort())
+	log.Println("Train service is starting....")
+
+	<-ctx.Done()
 }

@@ -9,9 +9,9 @@ type APIPort interface {
 	CreateTrain(ctx context.Context, name string,capacity uint) error
 	GetTrainByID(ctx context.Context, ID uint) (*domain.Train, error)
 	ListTrains(ctx context.Context) ([]domain.Train, error)
-	ListTrainsFiltered(ctx context.Context, filters map[string]string) ([]domain.Train, error)
+	ListTrainsFiltered(ctx context.Context, trainFilters *domain.TrainFilters) ([]domain.Train, error)
 	UpdateTrain(ctx context.Context, ID uint, name string) error
-	UpdateTrainTravelDetails(ctx context.Context, TrainID uint, destination, origin, departureTime, arrivalTime string) error
+	UpdateTrainTravelDetails(ctx context.Context, TrainID uint, travelDetails *domain.TrainTravelDetails) error
 	DeleteTrain(ctx context.Context, ID uint) error
 	CreateSeat(ctx context.Context, trainID uint, seatNumber uint) error
 	UpdateSeatNumber(ctx context.Context, ID uint, seatNumber uint) error
