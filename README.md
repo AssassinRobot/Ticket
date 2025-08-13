@@ -1,5 +1,7 @@
 # Ticket
 
+![a silly diagram](assets/train-reservation.png)
+
 Welcome to **Ticket** – an Event-driven Microservice written in Go where each service is implemented based on Hexagonal architecture principles. This practice project is designed for simplicity and as an exercise with event driven architecture(not just a simple pub/sub), making it approachable for anyone wanting to learn,explore and contribute.
 
 ---
