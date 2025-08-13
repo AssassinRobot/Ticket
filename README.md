@@ -15,7 +15,7 @@ Ticket is a train ticket booking system built with an **event-driven architectur
 ## 🛠 Technologies Used
 
 - **Go** (Golang): The entire backend is written in Go.
-- **RESTful APIs**: Each domain (user, train, ticket) exposes clear rest API for operations utilize Fiber(it would be changen when API gateway completed. services will communicate via events and API gateway will change http requests to commands).
+- **RESTful API**:API Gateway accepts HTTP requests and interact to services via event(nats request/reply) also exposes clear rest API for operations(implemented with Fiber).
 - **Nats/JetStream**: Utilized as event bus exposing robust features and also written in Go
 - **Postgresql**: As database(Where each service has own database)
 - **Protocol Buffers**: Used as event payload serialization format because of it's elegant performance.
@@ -24,14 +24,14 @@ Ticket is a train ticket booking system built with an **event-driven architectur
 
 ## 📝 TODO List
 
-1. **Add authentication & authorization** (secure endpoints)
-2. **Improve error handling**
-3. **Complete API Gateway**
-4. **Implement Travel,Commnets and City services** 
-5. **Comprehensive testing** (unit & integration)
-6. **Notifications for booking tickets** 
-7. **Front-end client** (React/Vue/Angular)
-8. **Documentation** – expand with API specs and code walkthroughs
+ - [ ] **Add authentication & authorization** (secure endpoints)
+ - [ ] **Improve error handling**
+ - [x] **Complete API Gateway**
+ - [ ] **Implement Travel,Commnets and City services** 
+ - [ ] **Comprehensive testing** (unit & integration)
+ - [ ] **Notifications for booking tickets** 
+ - [ ] **Front-end client** (React/Vue/Angular)
+ - [ ] **Documentation** – expand with API specs and code walkthroughs
 
 ---
 
